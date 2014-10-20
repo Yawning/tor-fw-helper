@@ -302,9 +302,8 @@ func retreiveDeviceDescription(xmlLoc *url.URL) (*upnpRoot, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Close = true // Remove this and die.
 	req.Header.Set("User-Agent", userAgent)
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

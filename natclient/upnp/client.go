@@ -9,6 +9,7 @@ package upnp
 import (
 	"fmt"
 	"net"
+	"net/http"
 
 	"github.com/yawning/go-fw-helper/natclient/base"
 )
@@ -17,11 +18,14 @@ const (
 	methodName = "UPnP"
 
 //	userAgent = "BeOS/5.0 UPnP/1.1 Helper/1.0"
-	userAgent = "" // Standardized, but optional.
+	userAgent    = "" // Standardized, but optional.
 	outgoingPort = 0
 )
 
-type ClientFactory struct {}
+var httpTransport = &http.Transport{DisableKeepAlives: true, DisableCompression: true}
+var httpClient = &http.Client{Transport: httpTransport}
+
+type ClientFactory struct{}
 
 func (f *ClientFactory) Name() string {
 	return methodName

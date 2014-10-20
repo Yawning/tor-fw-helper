@@ -67,12 +67,11 @@ func (c *Client) issueSoapRequest(actionName, argsXML string) (*soapBody, error)
 	if err != nil {
 		return nil, err
 	}
-	req.Close = true // Remove this and die.
 	req.Header.Set("Content-Type", "text/xml; charset=\"utf-8\"")
 	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Soapaction", soapAction)
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
