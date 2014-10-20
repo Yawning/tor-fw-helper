@@ -9,34 +9,44 @@ package upnp
 import (
 	"fmt"
 	"net"
+
+	"github.com/yawning/go-fw-helper/natclient/base"
 )
 
 const (
+	methodName = "UPnP"
+
 //	userAgent = "BeOS/5.0 UPnP/1.1 Helper/1.0"
 	userAgent = "" // Standardized, but optional.
 	outgoingPort = 0
 )
 
+type ClientFactory struct {}
+
+func (f *ClientFactory) Name() string {
+	return methodName
+}
+
+func (f *ClientFactory) New() (base.Client, error) {
+	var err error
+
+	c := &Client{}
+	c.ctrl, err = c.discover()
+	if err != nil {
+		return nil, err
+	}
+	c.internalAddr, err = c.getInternalAddress()
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
 // Client is UPnP client instance.
 type Client struct {
 	ctrl         *controlPoint
 	internalAddr *net.IP
-}
-
-// New creates a new UPnP client instance.
-func New() (*Client, error) {
-	var err error
-
-	client := &Client{}
-	client.ctrl, err = client.discover()
-	if err != nil {
-		return nil, err
-	}
-	client.internalAddr, err = client.getInternalAddress()
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
 }
 
 func (c *Client) getInternalAddress() (*net.IP, error) {
@@ -67,3 +77,6 @@ func (c *Client) getInternalAddress() (*net.IP, error) {
 	// guess?  It's not like multi-homing is a thing right? *cries*
 	return nil, fmt.Errorf("upnp: failed to determine local IP address")
 }
+
+var _ base.ClientFactory = (*ClientFactory)(nil)
+var _ base.Client = (*Client)(nil)

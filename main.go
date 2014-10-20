@@ -18,7 +18,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yawning/go-fw-helper/upnp"
+	"github.com/yawning/go-fw-helper/natclient"
 )
 
 const (
@@ -137,18 +137,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Ok, at this point we need to fetch the public IP or forward some ports,
-	// so initialize the uPNP client.
-	upnpClient, err := upnp.New()
+	// Discover/Initialize a compatible NAT traversal method.
+	c, err := natclient.New()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "E: Failed to discover uPNP service: %s\n", err)
+		fmt.Fprintf(os.Stderr, "E: %s\n", err)
 		os.Exit(1)
 	}
 
 	// Forward some ports, the response is delivered over stdout in a
 	// predefined format.
 	for _, pair := range portsToForward {
-		err = upnpClient.AddPortMapping(mappingDescr, pair.internal, pair.external, mappingDuration)
+		err = c.AddPortMapping(mappingDescr, pair.internal, pair.external, mappingDuration)
 		if err != nil {
 			fmt.Fprintf(os.Stdout, "tor-fw-helper tcp-forward %d %d FAIL\n", pair.external, pair.internal)
 		} else {
@@ -159,7 +158,7 @@ func main() {
 
 	// Get the external IP.
 	if doFetchIP {
-		ip, err := upnpClient.GetExternalIPAddress()
+		ip, err := c.GetExternalIPAddress()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "E: Failed to query the external IP address: %s", err)
 			os.Exit(1)

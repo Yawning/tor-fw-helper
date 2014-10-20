@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yawning/go-fw-helper/upnp/httpu"
+	"github.com/yawning/go-fw-helper/natclient/upnp/httpu"
 )
 
 const (
