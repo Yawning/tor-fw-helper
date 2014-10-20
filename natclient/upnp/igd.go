@@ -62,6 +62,8 @@ func (c *Client) issueSoapRequest(actionName, argsXML string) (*soapBody, error)
 	body := []byte(header + actionOpen + argsXML + actionClose + footer)
 	soapAction := "\"" + c.ctrl.urn.String() + "#" + actionName + "\""
 
+	c.Vlogf("soap: issuing %s\n", actionName)
+
 	reqBuf := bytes.NewBuffer(body)
 	req, err := http.NewRequest("POST", c.ctrl.url.String(), bufio.NewReader(reqBuf))
 	if err != nil {
@@ -100,6 +102,7 @@ func (c *Client) issueSoapRequest(actionName, argsXML string) (*soapBody, error)
 
 // GetExternalIPAddress queries the router's external IP address.
 func (c *Client) GetExternalIPAddress() (*net.IP, error) {
+
 	respBody, err := c.issueSoapRequest("GetExternalIPAddress", "")
 	if err != nil {
 		return nil, err
@@ -125,6 +128,8 @@ func (c *Client) AddPortMapping(descr string, internal, external, duration int) 
 		// creation of permanent mappings.  Normalize around UPnP 1.1 behavior.
 		duration = maxMappingDuration
 	}
+
+	c.Vlogf("AddPortMapping: '%s' %s:%d <-> 0.0.0.0:%d (%d sec)\n", descr, c.internalAddr, internal, external, duration)
 
 	argsXML := "<NewRemoteHost></NewRemoteHost>" +
 		"<NewExternalPort>" + strconv.FormatUint(uint64(external), 10) + "</NewExternalPort>" +

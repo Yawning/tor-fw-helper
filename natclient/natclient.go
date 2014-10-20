@@ -27,11 +27,17 @@ func registerFactory(f base.ClientFactory) {
 
 // New attempts to discover and initialize a suitable port forwarding mechanism
 // using any of the compatible backends.
-func New() (base.Client, error) {
+func New(verbose bool) (base.Client, error) {
 	for _, f := range factories {
-		c, err := f.New()
+		if verbose {
+			base.Vlogf("attempting backend: %s\n", f.Name())
+		}
+		c, err := f.New(verbose)
 		if c != nil && err == nil {
+			c.Vlogf("using backend: %s\n", f.Name())
 			return c, nil
+		} else if verbose {
+			base.Vlogf("failed to initialize: %s - %s\n", f.Name(), err)
 		}
 	}
 	return nil, fmt.Errorf("failed to initialize/discover a port forwarding mechanism")

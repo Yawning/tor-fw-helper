@@ -8,7 +8,14 @@
 package base
 
 import (
+	"fmt"
 	"net"
+	"os"
+)
+
+const (
+	// VlogPrefix is the verbose logging output prefix.
+	VlogPrefix = "V: "
 )
 
 // ClientFactory is a Client factory.
@@ -18,7 +25,7 @@ type ClientFactory interface {
 
 	// Initializes and probes for a suitable configuration mechanism and
 	// returns a ready to use Client.
-	New() (Client, error)
+	New(verbose bool) (Client, error)
 }
 
 // Client is a NAT port forwarding mechanism configuration client.
@@ -30,4 +37,13 @@ type Client interface {
 	// GetExternalIPAddress queries the router for the external public IP
 	// address.
 	GetExternalIPAddress() (*net.IP, error)
+
+	// Vlogf logs verbose debugging messages to stderror.  It is up to the
+	// implementation to squelch output when constructed with verbose = false.
+	Vlogf(f string, a ...interface{})
+}
+
+// Vlogf logs verbose debugging messages to stderror.
+func Vlogf(f string, a ...interface{}) {
+	fmt.Fprintf(os.Stderr, VlogPrefix+f, a...)
 }

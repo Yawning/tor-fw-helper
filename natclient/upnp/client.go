@@ -26,10 +26,10 @@ func (f *ClientFactory) Name() string {
 	return methodName
 }
 
-func (f *ClientFactory) New() (base.Client, error) {
+func (f *ClientFactory) New(verbose bool) (base.Client, error) {
 	var err error
 
-	c := &Client{}
+	c := &Client{verbose: verbose}
 	c.ctrl, c.internalAddr, err = c.discover()
 	if err != nil {
 		return nil, err
@@ -40,8 +40,15 @@ func (f *ClientFactory) New() (base.Client, error) {
 
 // Client is UPnP client instance.
 type Client struct {
+	verbose      bool
 	ctrl         *controlPoint
 	internalAddr net.IP
+}
+
+func (c *Client) Vlogf(f string, a ...interface{}) {
+	if c.verbose {
+		base.Vlogf(methodName+": "+f, a...)
+	}
 }
 
 var _ base.ClientFactory = (*ClientFactory)(nil)

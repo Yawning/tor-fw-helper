@@ -138,7 +138,7 @@ func main() {
 	}
 
 	// Discover/Initialize a compatible NAT traversal method.
-	c, err := natclient.New()
+	c, err := natclient.New(isVerbose)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "E: %s\n", err)
 		os.Exit(1)

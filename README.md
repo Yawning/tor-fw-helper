@@ -12,7 +12,6 @@ Differences between go-fw-helper and tor-fw-helper:
    happening in certain enviornments.  go-fw-helper uses 480 second leases (tor
    invokes the helper every 300 seconds, and will retry at 60 second intervals
    if the helper ever fails).
- * go-fw-helper's "-v" option is fairly useless.
  * go-fw-helper's "-T" option does not write to the log file.
 
 Limitations:

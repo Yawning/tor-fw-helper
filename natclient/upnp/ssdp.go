@@ -155,15 +155,20 @@ func (c *Client) discover() (cp *controlPoint, localAddr net.IP, err error) {
 	// have screwed up UPnP to the point where "work" is loosely defined.)
 
 	// 1. Find the target devices.
+	c.Vlogf("probing for UPNP root devices via M-SEARCH\n")
 	rootXMLLocs, err := discoverRootDevices()
 	if err != nil {
 		return nil, nil, err
 	}
 
+	c.Vlogf("received %d potential root devices\n", len(rootXMLLocs))
+
 	for _, rootLoc := range rootXMLLocs {
 		// 2. Pull down the "Device Description" document.
+		c.Vlogf("downloading 'Device Description' from %s\n", rootLoc)
 		rootXML, localAddr, err := retreiveDeviceDescription(rootLoc)
 		if err != nil {
+			c.Vlogf("download failed: %s\n", err)
 			continue
 		}
 
@@ -192,6 +197,7 @@ func (c *Client) discover() (cp *controlPoint, localAddr net.IP, err error) {
 			if rootXML.URLBase != "" {
 				urlBase, err = url.Parse(rootXML.URLBase)
 				if err != nil {
+					c.Vlogf("malformed URLBase: %s\n", err)
 					continue
 				}
 			} else {
@@ -202,15 +208,19 @@ func (c *Client) discover() (cp *controlPoint, localAddr net.IP, err error) {
 			}
 		}
 		rootD := rootXML.Device // InternetGatewayDevice
+		c.Vlogf("device: %s - %s\n", rootD.Manufacturer, rootD.ModelName)
 		if !rootD.is(internetGatewayDevice) {
+			c.Vlogf("root device is not a %s\n", internetGatewayDevice)
 			continue
 		}
 		wanD := rootD.findChild(wanDevice) // WANDevice
 		if wanD == nil {
+			c.Vlogf("device does not have a %s\n", wanDevice)
 			continue
 		}
 		wanConnD := wanD.findChild(wanConnectionDevice) // WANConnectionDevice
 		if wanConnD == nil {
+			c.Vlogf("device does not have a %s\n", wanConnectionDevice)
 			continue
 		}
 
@@ -233,18 +243,23 @@ func (c *Client) discover() (cp *controlPoint, localAddr net.IP, err error) {
 					// ControlURL is absolute.
 					cp.url, err = url.Parse(s.ControlURL)
 					if err != nil {
-						return nil, nil, err
+						c.Vlogf("malformed ControlURL: %s\n", err)
+						continue
 					}
 				}
 				cp.urn, _ = parseURN(s.ServiceType)
 
 				// 3. Pull down the "Service Description" document. (Skipped)
+				c.Vlogf("found a %s at %s\n", cp.urn.kindType, cp.url)
+				c.Vlogf("local IP is %s\n", localAddr)
 
 				return cp, localAddr, nil
 			}
 		}
+
+		c.Vlogf("device has no compatible upstream services\n")
 	}
-	return nil, nil, fmt.Errorf("upnp: failed to find a compatible service")
+	return nil, nil, fmt.Errorf("failed to find a compatible service")
 }
 
 func discoverRootDevices() ([]*url.URL, error) {
@@ -323,7 +338,7 @@ func retreiveDeviceDescription(xmlLoc *url.URL) (*upnpRoot, net.IP, error) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return nil, nil, fmt.Errorf("upnp: XML fetch failed with status: %s", resp.Status)
+		return nil, nil, fmt.Errorf("XML fetch failed with status: %s", resp.Status)
 	}
 	xmlDoc, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -339,5 +354,5 @@ func retreiveDeviceDescription(xmlLoc *url.URL) (*upnpRoot, net.IP, error) {
 		return rewt, tcpAddr.IP, nil
 	}
 
-	return nil, nil, fmt.Errorf("upnp: failed to determine local address")
+	return nil, nil, fmt.Errorf("failed to determine local address")
 }
