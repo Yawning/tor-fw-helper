@@ -9,7 +9,9 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"path"
 	"strconv"
@@ -137,7 +139,7 @@ func (d *upnpDevice) findService(k string) *upnpService {
 	return nil
 }
 
-func (c *Client) discover() (cp *controlPoint, err error) {
+func (c *Client) discover() (cp *controlPoint, localAddr net.IP, err error) {
 	// The uPNP discovery process is 3 steps.
 	//  1. Figure out where the relevant device is via M-SEARCH over UDP
 	//     multicast.
@@ -155,12 +157,12 @@ func (c *Client) discover() (cp *controlPoint, err error) {
 	// 1. Find the target devices.
 	rootXMLLocs, err := discoverRootDevices()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	for _, rootLoc := range rootXMLLocs {
 		// 2. Pull down the "Device Description" document.
-		rootXML, err := retreiveDeviceDescription(rootLoc)
+		rootXML, localAddr, err := retreiveDeviceDescription(rootLoc)
 		if err != nil {
 			continue
 		}
@@ -231,18 +233,18 @@ func (c *Client) discover() (cp *controlPoint, err error) {
 					// ControlURL is absolute.
 					cp.url, err = url.Parse(s.ControlURL)
 					if err != nil {
-						return nil, err
+						return nil, nil, err
 					}
 				}
 				cp.urn, _ = parseURN(s.ServiceType)
 
 				// 3. Pull down the "Service Description" document. (Skipped)
 
-				return cp, nil
+				return cp, localAddr, nil
 			}
 		}
 	}
-	return nil, fmt.Errorf("upnp: failed to find a compatible service")
+	return nil, nil, fmt.Errorf("upnp: failed to find a compatible service")
 }
 
 func discoverRootDevices() ([]*url.URL, error) {
@@ -297,27 +299,45 @@ func discoverRootDevices() ([]*url.URL, error) {
 	return nil, fmt.Errorf("ssdp: failed to discover any root devices")
 }
 
-func retreiveDeviceDescription(xmlLoc *url.URL) (*upnpRoot, error) {
+func retreiveDeviceDescription(xmlLoc *url.URL) (*upnpRoot, net.IP, error) {
+	c, err := net.Dial("tcp", xmlLoc.Host)
+	if err != nil {
+		return nil, nil, err
+	}
+	conn := httputil.NewClientConn(c, nil)
+	defer conn.Close()
+
+	// At this point we have the local address of the http socket, that can
+	// apparently talk to the UPnP device, so save that off as the local
+	// address.
+	localAddr := c.LocalAddr()
+
 	req, err := http.NewRequest("GET", xmlLoc.String(), nil)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	req.Header.Set("User-Agent", userAgent)
-	resp, err := httpClient.Do(req)
+	resp, err := conn.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("upnp: XML fetch failed with status: %s", resp.Status)
+		return nil, nil, fmt.Errorf("upnp: XML fetch failed with status: %s", resp.Status)
 	}
 	xmlDoc, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	rewt := &upnpRoot{}
 	if err = xml.Unmarshal(xmlDoc, rewt); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return rewt, nil
+
+	// This should always be true, but be paranoid.
+	if tcpAddr, ok := localAddr.(*net.TCPAddr); ok {
+		return rewt, tcpAddr.IP, nil
+	}
+
+	return nil, nil, fmt.Errorf("upnp: failed to determine local address")
 }

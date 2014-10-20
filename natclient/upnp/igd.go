@@ -71,6 +71,9 @@ func (c *Client) issueSoapRequest(actionName, argsXML string) (*soapBody, error)
 	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Soapaction", soapAction)
 
+	httpTransport := &http.Transport{DisableKeepAlives: true, DisableCompression: true}
+	httpClient := &http.Client{Transport: httpTransport}
+
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
