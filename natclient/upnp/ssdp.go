@@ -333,7 +333,7 @@ func retreiveDeviceDescription(xmlLoc *url.URL) (*upnpRoot, net.IP, error) {
 	}
 	req.Header.Set("User-Agent", userAgent)
 	resp, err := conn.Do(req)
-	if err != nil {
+	if err != nil && err != httputil.ErrPersistEOF {
 		return nil, nil, err
 	}
 	defer resp.Body.Close()
