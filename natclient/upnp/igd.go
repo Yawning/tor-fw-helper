@@ -52,7 +52,7 @@ func (c *Client) issueSoapRequest(actionName, argsXML string) (*soapBody, error)
 	// not exactly what they expect, so requests are crafted by hand.  At a
 	// future time when more than 2 requests need to be supported, revisit.
 	const header = xml.Header +
-		"<s:Envelope xmlns:=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+		"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
 		"s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" +
 		"<s:Body>"
 	const footer = "</s:Body></s:Envelope>"
@@ -64,14 +64,19 @@ func (c *Client) issueSoapRequest(actionName, argsXML string) (*soapBody, error)
 
 	c.Vlogf("soap: issuing %s\n", actionName)
 
+	// miniupnpd (used by a lot of routers) can't handle chunked transfer
+	// encoding at all and just passes the raw body to it's XML parser.  This
+	// is all sorts of garbage and violates RFC 2616.
 	reqBuf := bytes.NewBuffer(body)
 	req, err := http.NewRequest("POST", c.ctrl.url.String(), bufio.NewReader(reqBuf))
 	if err != nil {
 		return nil, err
 	}
+	req.ContentLength = int64(len(body))
+	req.TransferEncoding = []string{"identity"}
 	req.Header.Set("Content-Type", "text/xml; charset=\"utf-8\"")
 	req.Header.Set("User-Agent", userAgent)
-	req.Header.Set("Soapaction", soapAction)
+	req.Header.Set("SOAPAction", soapAction)
 
 	httpTransport := &http.Transport{DisableKeepAlives: true, DisableCompression: true}
 	httpClient := &http.Client{Transport: httpTransport}
@@ -144,6 +149,7 @@ func (c *Client) AddPortMapping(descr string, internal, external, duration int) 
 	// enough to warrant parsing.
 	_, err := c.issueSoapRequest("AddPortMapping", argsXML)
 	if err != nil {
+		c.Vlogf("igd: AddPortMapping failed: %s\n", err)
 		return err
 	}
 	return nil
