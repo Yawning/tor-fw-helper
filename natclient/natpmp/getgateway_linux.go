@@ -97,5 +97,5 @@ msgLoop:
 		}
 	}
 
-	return nil, fmt.Errorf("natpmp: failed to find default gateway")
+	return nil, fmt.Errorf("failed to find default gateway")
 }

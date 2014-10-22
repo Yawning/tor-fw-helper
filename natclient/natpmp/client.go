@@ -62,7 +62,6 @@ type Client struct {
 }
 
 func (c *Client) AddPortMapping(description string, internalPort, externalPort, duration int) error {
-	// NAT-PMP does not support descriptions.
 	if duration == 0 {
 		duration = defaultMappingDuration
 	}
@@ -76,12 +75,10 @@ func (c *Client) AddPortMapping(description string, internalPort, externalPort, 
 		return err
 	}
 	if resp, ok := r.(*requestMappingResp); ok {
-		if err := resultCodeToError(resp.resultCode); err != nil {
-			return err
-		}
 		// XXX: Check that resp.mappedPort = externalPort.  The router is free
 		// to chose another one, and the mapping needs to be backed out and a
 		// error returned if that happens.
+		_ = resp
 		return nil
 	}
 	return fmt.Errorf("invalid response received to AddPortMapping")
@@ -104,9 +101,6 @@ func (c *Client) GetExternalIPAddress() (net.IP, error) {
 		return nil, err
 	}
 	if resp, ok := r.(*externalAddressResp); ok {
-		if err := resultCodeToError(resp.resultCode); err != nil {
-			return nil, err
-		}
 		c.extAddr = resp.extAddr
 		return resp.extAddr, nil
 	}
