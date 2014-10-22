@@ -31,7 +31,8 @@ type ClientFactory interface {
 // Client is a NAT port forwarding mechanism configuration client.
 type Client interface {
 	// AddPortMapping adds a new TCP/IP port forwarding entry between
-	// clientIP:internalPort and 0.0.0.0:externalPort.
+	// clientIP:internalPort and 0.0.0.0:externalPort.  A duration of "0" will
+	// have the backend pick an "appropriate" and "safe" duration.
 	AddPortMapping(description string, internalPort, externalPort, duration int) error
 
 	// GetExternalIPAddress queries the router for the external public IP

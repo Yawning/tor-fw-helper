@@ -23,7 +23,7 @@ import (
 
 const (
 	mappingDescr    = "Tor relay"
-	mappingDuration = 300 + (60 * 3)
+	mappingDuration = 0
 	versionString   = "0.1"
 )
 

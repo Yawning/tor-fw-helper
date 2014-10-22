@@ -125,15 +125,8 @@ func (c *Client) GetExternalIPAddress() (net.IP, error) {
 // AddPortMapping adds a new TCP/IP port mapping.  The internal IP address of
 // the client is used as the destination.  Per the UPnP spec, duration can
 // range from 0 to 604800, with the behavior on 0 changing depending on the
-// version of the spec.  This implementation treats 0 as "maximum duration",
-// and not "permanent".
+// version of the spec.
 func (c *Client) AddPortMapping(descr string, internal, external, duration int) error {
-	if duration == 0 {
-		// UPnP 1.0 treats 0 as "permanent", but UPnP 1.1 does not allow the
-		// creation of permanent mappings.  Normalize around UPnP 1.1 behavior.
-		duration = maxMappingDuration
-	}
-
 	c.Vlogf("AddPortMapping: '%s' %s:%d <-> 0.0.0.0:%d (%d sec)\n", descr, c.internalAddr, internal, external, duration)
 
 	argsXML := "<NewRemoteHost></NewRemoteHost>" +

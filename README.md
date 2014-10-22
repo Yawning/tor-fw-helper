@@ -21,9 +21,6 @@ Limitations:
    config may need to be altered. 
 
 TODO:
- * Per RFC6886, using a lease duration other than 0 has been known to crash
-   routers, so the UPnP least time should probably be changed back to "0", even
-   though the table getting full also causes horrific things to happen.
  * BSD and Windows NAT-PMP support.
 
 Further Reading:
