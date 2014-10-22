@@ -106,7 +106,7 @@ func (c *Client) issueSoapRequest(actionName, argsXML string) (*soapBody, error)
 }
 
 // GetExternalIPAddress queries the router's external IP address.
-func (c *Client) GetExternalIPAddress() (*net.IP, error) {
+func (c *Client) GetExternalIPAddress() (net.IP, error) {
 
 	respBody, err := c.issueSoapRequest("GetExternalIPAddress", "")
 	if err != nil {
@@ -116,7 +116,7 @@ func (c *Client) GetExternalIPAddress() (*net.IP, error) {
 	if respBody.GetExternalIPAddressResponse != nil {
 		ip := net.ParseIP(respBody.GetExternalIPAddressResponse.IP)
 		if ip != nil {
-			return &ip, nil
+			return ip, nil
 		}
 	}
 	return nil, fmt.Errorf("igd: GetExternalIPAddress() failed")

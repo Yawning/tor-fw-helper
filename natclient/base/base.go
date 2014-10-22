@@ -36,11 +36,14 @@ type Client interface {
 
 	// GetExternalIPAddress queries the router for the external public IP
 	// address.
-	GetExternalIPAddress() (*net.IP, error)
+	GetExternalIPAddress() (net.IP, error)
 
 	// Vlogf logs verbose debugging messages to stderror.  It is up to the
 	// implementation to squelch output when constructed with verbose = false.
 	Vlogf(f string, a ...interface{})
+
+	// Close cleans up all the state associated with the particular Client.
+	Close()
 }
 
 // Vlogf logs verbose debugging messages to stderror.

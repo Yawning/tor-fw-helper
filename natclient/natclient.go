@@ -11,6 +11,7 @@ import (
 	"fmt"
 
 	"github.com/yawning/go-fw-helper/natclient/base"
+	"github.com/yawning/go-fw-helper/natclient/natpmp"
 	"github.com/yawning/go-fw-helper/natclient/upnp"
 )
 
@@ -34,7 +35,9 @@ func New(verbose bool) (base.Client, error) {
 		}
 		c, err := f.New(verbose)
 		if c != nil && err == nil {
-			c.Vlogf("using backend: %s\n", f.Name())
+			if verbose {
+				base.Vlogf("using backend: %s\n", f.Name())
+			}
 			return c, nil
 		} else if verbose {
 			base.Vlogf("failed to initialize: %s - %s\n", f.Name(), err)
@@ -45,4 +48,5 @@ func New(verbose bool) (base.Client, error) {
 
 func init() {
 	registerFactory(&upnp.ClientFactory{})
+	registerFactory(&natpmp.ClientFactory{})
 }

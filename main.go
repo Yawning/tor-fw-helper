@@ -143,6 +143,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "E: %s\n", err)
 		os.Exit(1)
 	}
+	defer c.Close()
 
 	// Forward some ports, the response is delivered over stdout in a
 	// predefined format.

@@ -51,5 +51,9 @@ func (c *Client) Vlogf(f string, a ...interface{}) {
 	}
 }
 
+func (c *Client) Close() {
+	// No state to clean up.
+}
+
 var _ base.ClientFactory = (*ClientFactory)(nil)
 var _ base.Client = (*Client)(nil)
