@@ -75,11 +75,24 @@ func (c *Client) AddPortMapping(description string, internalPort, externalPort, 
 		return err
 	}
 	if resp, ok := r.(*requestMappingResp); ok {
-		// XXX: Check that resp.mappedPort = externalPort.  The router is free
-		// to chose another one, and the mapping needs to be backed out and a
-		// error returned if that happens.
-		_ = resp
-		return nil
+		// Check that resp.mappedPort = externalPort.
+		if int(resp.mappedPort) == externalPort {
+			return nil
+		}
+
+		// There was a conflict, and the router picked a different port than
+		// requested.  If this was a just world, where people could implement
+		// simple specs, then we would uncomment the code block and
+		// destroy the mapping that the router created.
+		//
+		// req, err := newRequestMappingReq(internalPort, 0, 0)
+		// if err == nil {
+		//  c.issueRequest(req)
+		// }
+		//
+		// However the world is a harsh and cruel place and the miniupnpd
+		// instance on my test router crashes when we try to delete mappings.
+		return fmt.Errorf("router mapped a different external port than requested")
 	}
 	return fmt.Errorf("invalid response received to AddPortMapping")
 }
