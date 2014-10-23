@@ -57,14 +57,18 @@ func (f *ClientFactory) New(verbose bool) (base.Client, error) {
 	return c, nil
 }
 
+// Client is a NAT-PMP client instance.
 type Client struct {
-	verbose bool
-	conn    *net.UDPConn
+	verbose      bool
+	conn         *net.UDPConn
 	internalAddr net.IP
-	gwAddr  net.IP
-	extAddr net.IP
+	gwAddr       net.IP
+	extAddr      net.IP
 }
 
+// AddPortMapping adds a new TCP/IP port mapping.  The internal IP address of
+// the client is used as the destination.  A 0 duration will request a 7200
+// second lease.
 func (c *Client) AddPortMapping(description string, internalPort, externalPort, duration int) error {
 	if duration == 0 {
 		duration = defaultMappingDuration
@@ -97,15 +101,16 @@ func (c *Client) AddPortMapping(description string, internalPort, externalPort, 
 		//  c.issueRequest(req)
 		// }
 		//
-		// However the world is a harsh and cruel place and miniupnpd isn't RFC
-		// 6886 compliant so sending packets according to spec doesn't actually
-		// delete the correct mapping.
+		// However the world is a harsh and cruel place and old versions of
+		// miniupnpd aren't RFC 6886 compliant so sending packets according
+		// to spec doesn't actually delete the correct mapping.
 		c.Vlogf("router mapped a different external port than requested: %d\n", resp.mappedPort)
 		return fmt.Errorf("router mapped a different external port than requested")
 	}
 	return fmt.Errorf("invalid response received to AddPortMapping")
 }
 
+// GetExternalIPAddress queries the router's external IP address.
 func (c *Client) GetExternalIPAddress() (net.IP, error) {
 	// This is cached during startup since it doubles as the "does the router
 	// actually support this?" check.

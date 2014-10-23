@@ -126,13 +126,13 @@ func (c *Client) GetExternalIPAddress() (net.IP, error) {
 // the client is used as the destination.  Per the UPnP spec, duration can
 // range from 0 to 604800, with the behavior on 0 changing depending on the
 // version of the spec.
-func (c *Client) AddPortMapping(descr string, internal, external, duration int) error {
-	c.Vlogf("AddPortMapping: '%s' %s:%d <-> 0.0.0.0:%d (%d sec)\n", descr, c.internalAddr, internal, external, duration)
+func (c *Client) AddPortMapping(descr string, internalPort, externalPort, duration int) error {
+	c.Vlogf("AddPortMapping: '%s' %s:%d <-> 0.0.0.0:%d (%d sec)\n", descr, c.internalAddr, internalPort, externalPort, duration)
 
 	argsXML := "<NewRemoteHost></NewRemoteHost>" +
-		"<NewExternalPort>" + strconv.FormatUint(uint64(external), 10) + "</NewExternalPort>" +
+		"<NewExternalPort>" + strconv.FormatUint(uint64(externalPort), 10) + "</NewExternalPort>" +
 		"<NewProtocol>TCP</NewProtocol>" +
-		"<NewInternalPort>" + strconv.FormatUint(uint64(internal), 10) + "</NewInternalPort>" +
+		"<NewInternalPort>" + strconv.FormatUint(uint64(internalPort), 10) + "</NewInternalPort>" +
 		"<NewInternalClient>" + c.internalAddr.String() + "</NewInternalClient>" +
 		"<NewEnabled>1</NewEnabled>" +
 		"<NewPortMappingDescription>" + descr + "</NewPortMappingDescription>" +

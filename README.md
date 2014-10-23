@@ -1,4 +1,4 @@
-### go-fw-helper - tor-fw-helper, with extra safety.
+### go-fw-helper - tor-fw-helper with extra safety.
 #### Yawning Angel (yawning at torproject dot org)
 
 go-fw-helper is designed as a drop-in replacement for tor-fw-helper.
