@@ -35,6 +35,10 @@ type Client interface {
 	// have the backend pick an "appropriate" and "safe" duration.
 	AddPortMapping(description string, internalPort, externalPort, duration int) error
 
+	// DeletePortMapping removes an existing TCP/IP port forwarding entry
+	// between clientIP:internalPort and 0.0.0.0:externalPort.
+	DeletePortMapping(internalPort, externalPort int) error
+
 	// GetExternalIPAddress queries the router for the external public IP
 	// address.
 	GetExternalIPAddress() (net.IP, error)

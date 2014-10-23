@@ -76,6 +76,7 @@ func usage() {
 		" [-v|--verbose]\n"+
 		" [-g|--fetch-public-ip]\n"+
 		" [-p|--forward-port ([<external port>]:<internal port>)]\n"+
+		" [-d|--unforward-port ([<external port>]:<internal port>]\n"+
 		" [-l|--list-ports]\n", os.Args[0])
 	os.Exit(1)
 }
@@ -87,6 +88,7 @@ func main() {
 	doFetchIP := false
 	doList := false
 	var portsToForward forwardList
+	var portsToUnforward forwardList
 
 	// So, the flag package kind of sucks and doesn't gracefully support the
 	// concept of aliased flags when printing usage, which results in a
@@ -105,6 +107,8 @@ func main() {
 	flag.BoolVar(&doList, "l", false, "")
 	flag.Var(&portsToForward, "forward-port", "")
 	flag.Var(&portsToForward, "p", "")
+	flag.Var(&portsToUnforward, "unforward-port", "")
+	flag.Var(&portsToUnforward, "d", "")
 	flag.Parse()
 
 	// Extra flag related handling.
@@ -125,6 +129,13 @@ func main() {
 					ent.external, ent.internal)
 			}
 		}
+		if len(portsToUnforward) > 0 {
+			fmt.Fprintf(os.Stderr, "V: Remove TCP forwarding:\n")
+			for _, ent := range portsToUnforward {
+				fmt.Fprintf(os.Stderr, "V: External %v, Internal: %v\n",
+					ent.external, ent.internal)
+			}
+		}
 	}
 	if doTest {
 		// If the app is being called in test mode, dump the command line
@@ -134,9 +145,9 @@ func main() {
 		fmt.Fprintf(os.Stderr, "E: --test-commandline not implemented yet\n")
 		os.Exit(1)
 	}
-	if len(portsToForward) == 0 && !doFetchIP && !doList {
+	if len(portsToForward) == 0 && !doFetchIP && !doList && len(portsToUnforward) == 0 {
 		// Nothing to do, sad panda.
-		fmt.Fprintf(os.Stderr, "E: We require a port to be forwarded, "+
+		fmt.Fprintf(os.Stderr, "E: We require a port to be forwarded/unforwarded, "+
 			"fetch_public_ip request, or list_ports!\n")
 		os.Exit(1)
 	}
@@ -161,6 +172,16 @@ func main() {
 			fmt.Fprintf(os.Stdout, "tor-fw-helper tcp-forward %d %d SUCCESS\n", pair.external, pair.internal)
 		}
 		os.Stdout.Sync()
+	}
+
+	// Unforward some ports.
+	for _, pair := range portsToUnforward {
+		err := c.DeletePortMapping(pair.internal, pair.external)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "E: DeletePortMapping() failed: %s\n", pair.internal, pair.external, err)
+		} else {
+			fmt.Fprintf(os.Stderr, "go-fw-helper: Removed External: %d, Internal:%d\n", pair.external, pair.internal)
+		}
 	}
 
 	// Get the external IP.

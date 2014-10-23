@@ -211,3 +211,22 @@ func (c *Client) AddPortMapping(descr string, internalPort, externalPort, durati
 	}
 	return nil
 }
+
+// DeletePortMapping removes an existing TCP/IP port forwarding entry
+// between clientIP:internalPort and 0.0.0.0:externalPort.
+func (c *Client) DeletePortMapping(internalPort, externalPort int) error {
+	c.Vlogf("DeletePortMapping: %s:%d <-> 0.0.0.0:%d\n", c.internalAddr, internalPort, externalPort)
+
+	argsXML := "<NewRemoteHost></NewRemoteHost>" +
+		"<NewExternalPort>" + strconv.FormatUint(uint64(externalPort), 10) + "</NewExternalPort>" +
+		"<NewProtocol>TCP</NewProtocol>"
+
+	// HTTP 200 means that things worked.  The response isn't interesting
+	// enough to warrant parsing.
+	_, err := c.issueSoapRequest("DeletePortMapping", argsXML)
+	if err != nil {
+		c.Vlogf("igd: DeletePortMapping failed: %s\n", err)
+		return err
+	}
+	return nil
+}

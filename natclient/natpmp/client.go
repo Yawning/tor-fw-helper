@@ -93,22 +93,30 @@ func (c *Client) AddPortMapping(description string, internalPort, externalPort, 
 		}
 
 		// There was a conflict, and the router picked a different port than
-		// requested.  If this was a just world, where people could implement
-		// simple specs, then we would uncomment the code block and
-		// destroy the mapping that the router created.
-		//
-		// req, err := newRequestMappingReq(internalPort, 0, 0)
-		// if err == nil {
-		//  c.issueRequest(req)
-		// }
-		//
-		// However the world is a harsh and cruel place and old versions of
-		// miniupnpd aren't RFC 6886 compliant so sending packets according
-		// to spec doesn't actually delete the correct mapping.
+		// requested.  Undo the mapping that isn't exactly what we wanted.
+		c.DeletePortMapping(int(resp.internalPort), int(resp.mappedPort))
+
 		c.Vlogf("router mapped a different external port than requested: %d\n", resp.mappedPort)
 		return fmt.Errorf("router mapped a different external port than requested")
 	}
 	return fmt.Errorf("invalid response received to AddPortMapping")
+}
+
+// DeletePortMapping removes an existing TCP/IP port forwarding entry
+// between clientIP:internalPort and 0.0.0.0:externalPort.
+func (c *Client) DeletePortMapping(internalPort, externalPort int) error {
+	// Old versions (non-master as of this writing) of miniupnpd don't handle
+	// this correctly according to the spec (draft or RFC), so allowing this
+	// will potentially blow away the incorrect mappings.
+	//
+	// req, err := newRequestMappingReq(internalPort, 0, 0)
+	// if err != nil {
+	//  return err
+	// }
+	// _, err = c.issueRequest(req)
+	// return err
+
+	return syscall.ENOTSUP
 }
 
 // GetExternalIPAddress queries the router's external IP address.
