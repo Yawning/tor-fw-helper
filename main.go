@@ -150,8 +150,10 @@ func main() {
 	for _, pair := range portsToForward {
 		err = c.AddPortMapping(mappingDescr, pair.internal, pair.external, mappingDuration)
 		if err != nil {
+			c.Vlogf("AddPortMapping() failed: %s\n", err)
 			fmt.Fprintf(os.Stdout, "tor-fw-helper tcp-forward %d %d FAIL\n", pair.external, pair.internal)
 		} else {
+			c.Vlogf("AddPortMapping() succeded\n")
 			fmt.Fprintf(os.Stdout, "tor-fw-helper tcp-forward %d %d SUCCESS\n", pair.external, pair.internal)
 		}
 		os.Stdout.Sync()

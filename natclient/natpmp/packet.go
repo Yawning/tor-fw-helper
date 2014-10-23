@@ -85,8 +85,8 @@ func decodePacketHdr(raw []byte) (*packetHdr, error) {
 	return h, nil
 }
 
-func newExternalAddressReq() (*externalAddressReq, error) {
-	return &externalAddressReq{}, nil
+func newExternalAddressReq() *externalAddressReq {
+	return &externalAddressReq{}
 }
 
 func (r *externalAddressReq) op() uint8 {

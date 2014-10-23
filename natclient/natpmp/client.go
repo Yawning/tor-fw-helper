@@ -44,6 +44,9 @@ func (f *ClientFactory) New(verbose bool) (base.Client, error) {
 		c.Vlogf("failed to connect to router: %s\n", err)
 		return nil, err
 	}
+	tmp := c.conn.LocalAddr().(*net.UDPAddr)
+	c.internalAddr = tmp.IP
+	c.Vlogf("local IP is %s\n", c.internalAddr)
 
 	// Fetch the external address as a test of the router.
 	c.extAddr, err = c.GetExternalIPAddress()
@@ -57,6 +60,7 @@ func (f *ClientFactory) New(verbose bool) (base.Client, error) {
 type Client struct {
 	verbose bool
 	conn    *net.UDPConn
+	internalAddr net.IP
 	gwAddr  net.IP
 	extAddr net.IP
 }
@@ -66,12 +70,15 @@ func (c *Client) AddPortMapping(description string, internalPort, externalPort, 
 		duration = defaultMappingDuration
 	}
 
+	c.Vlogf("AddPortMapping: %s:%d <-> 0.0.0.0:%d (%d sec)\n", c.internalAddr, internalPort, externalPort, duration)
+
 	req, err := newRequestMappingReq(internalPort, externalPort, duration)
 	if err != nil {
 		return err
 	}
 	r, err := c.issueRequest(req)
 	if err != nil {
+		c.Vlogf("failed to create Request Mapping request: %s", err)
 		return err
 	}
 	if resp, ok := r.(*requestMappingResp); ok {
@@ -90,8 +97,10 @@ func (c *Client) AddPortMapping(description string, internalPort, externalPort, 
 		//  c.issueRequest(req)
 		// }
 		//
-		// However the world is a harsh and cruel place and the miniupnpd
-		// instance on my test router crashes when we try to delete mappings.
+		// However the world is a harsh and cruel place and miniupnpd isn't RFC
+		// 6886 compliant so sending packets according to spec doesn't actually
+		// delete the correct mapping.
+		c.Vlogf("router mapped a different external port than requested: %d\n", resp.mappedPort)
 		return fmt.Errorf("router mapped a different external port than requested")
 	}
 	return fmt.Errorf("invalid response received to AddPortMapping")
@@ -101,16 +110,18 @@ func (c *Client) GetExternalIPAddress() (net.IP, error) {
 	// This is cached during startup since it doubles as the "does the router
 	// actually support this?" check.
 	if c.extAddr != nil {
+		c.Vlogf("using cached external address: %s\n", c.extAddr)
 		return c.extAddr, nil
 	}
 
-	// Well ok, guess we need to hit the router up for this after all.
-	req, err := newExternalAddressReq()
-	if err != nil {
-		return nil, err
-	}
+	// First time we're querying the external IP, must be when we try to probe
+	// for the presence of a device.
+	c.Vlogf("querying external address\n")
+
+	req := newExternalAddressReq()
 	r, err := c.issueRequest(req)
 	if err != nil {
+		c.Vlogf("failed to external address: %s\n", err)
 		return nil, err
 	}
 	if resp, ok := r.(*externalAddressResp); ok {
