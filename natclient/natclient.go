@@ -16,6 +16,7 @@ import (
 )
 
 var factories = make(map[string]base.ClientFactory)
+var factoryNames []string
 
 func registerFactory(f base.ClientFactory) {
 	name := f.Name()
@@ -24,29 +25,32 @@ func registerFactory(f base.ClientFactory) {
 		panic(fmt.Sprintf("factory '%s' is already registered", name))
 	}
 	factories[name] = f
+	factoryNames = append(factoryNames, name)
 }
 
 // New attempts to discover and initialize a suitable port forwarding mechanism
 // using any of the compatible backends.
 func New(verbose bool) (base.Client, error) {
-	for _, f := range factories {
+	for _, name := range factoryNames {
+		f := factories[name]
 		if verbose {
-			base.Vlogf("attempting backend: %s\n", f.Name())
+			base.Vlogf("attempting backend: %s\n", name)
 		}
 		c, err := f.New(verbose)
 		if c != nil && err == nil {
 			if verbose {
-				base.Vlogf("using backend: %s\n", f.Name())
+				base.Vlogf("using backend: %s\n", name)
 			}
 			return c, nil
 		} else if verbose {
-			base.Vlogf("failed to initialize: %s - %s\n", f.Name(), err)
+			base.Vlogf("failed to initialize: %s - %s\n", name, err)
 		}
 	}
 	return nil, fmt.Errorf("failed to initialize/discover a port forwarding mechanism")
 }
 
 func init() {
+	factoryNames = make([]string, 0, 2)
 	registerFactory(&upnp.ClientFactory{})
 	registerFactory(&natpmp.ClientFactory{})
 }
