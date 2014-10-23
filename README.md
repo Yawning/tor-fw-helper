@@ -4,20 +4,24 @@
 go-fw-helper is designed as a drop-in replacement for tor-fw-helper.
 
 Features:
- * Compatibility with tor-fw-helper, with a few exceptions.
+ * Interface compatibility with tor-fw-helper.
  * UPnP based NAT traversal.
  * NAT-PMP based NAT traversal.
 
-Differences between go-fw-helper and tor-fw-helper:
- * go-fw-helper's "-T" option does not write to the log file.
-
 Limitations:
  * NAT-PMP is only supported on Linux for now.
+ * go-fw-helper's "-T" option does not write to the log file.
  * As the helper needs to be able to receive UDP packets, the local firewall's
-   config may need to be altered. 
+   config may need to be altered.
+ * Lease times are hardcoded to "0" for UPnP (Indefinite or 1 week/depending on
+   the UPnP version) and 7200 seconds for NAT-PMP.  RFC 6886 includes dire
+   warnings about broken UPnP implementations that freak out for non-"0" lease
+   times.
 
 TODO:
  * BSD and Windows NAT-PMP support.
+ * Maybe also support PCP.  Technically everything that speaks PCP should also
+   speak NAT-PMP, so this is relatively low priority.
 
 Further Reading:
  * http://www.upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.0-20080424.pdf
