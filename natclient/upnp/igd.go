@@ -11,6 +11,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"net"
 	"net/http"
 	"strconv"
@@ -29,21 +30,45 @@ type soapEnvelope struct {
 }
 
 type soapBody struct {
-	Fault                        *soapFault        `xml:"Fault"`
-	GetExternalIPAddressResponse *getExtIPResponse `xml:"GetExternalIPAddressResponse"`
+	Fault                              *soapFault             `xml:"Fault"`
+	GetExternalIPAddressResponse       *getExtIPResponse      `xml:"GetExternalIPAddressResponse"`
+	GetGenericPortMappingEntryResponse *getGenPMapEntResponse `xml:"GetGenericPortMappingEntryResponse"`
 }
 
 type soapFault struct {
-	FaultCode   string `xml:"faultcode"`
-	FaultString string `xml:"faultstring"`
-	Detail      string `xml:"detail"`
+	FaultCode   string      `xml:"faultcode"`
+	FaultString string      `xml:"faultstring"`
+	Detail      *soapDetail `xml:"detail"`
+}
+
+type soapDetail struct {
+	UPnPError *upnpError `xml:"UPnPError"`
+}
+
+type upnpError struct {
+	ErrorCode        int    `xml:"errorCode"`
+	ErrorDescription string `xml:"errorDescription"`
 }
 
 type getExtIPResponse struct {
 	IP string `xml:"NewExternalIPAddress"`
 }
 
+type getGenPMapEntResponse struct {
+	RemoteHost             string `xml:"NewRemoteHost"`
+	ExternalPort           int    `xml:"NewExternalPort"`
+	Protocol               string `xml:"NewProtocol"`
+	InternalPort           int    `xml:"NewInternalPort"`
+	InternalClient         string `xml:"NewInternalClient"`
+	Enabled                int    `xml:"NewEnabled"`
+	PortMappingDescription string `xml:"NewPortMappingDescription"`
+	LeaseDuration          int    `xml:"NewLeaseDuration"`
+}
+
 func (f *soapFault) String() string {
+	if f.Detail.UPnPError != nil {
+		return fmt.Sprintf("upnp error: %d - %s", f.Detail.UPnPError.ErrorCode, f.Detail.UPnPError.ErrorDescription)
+	}
 	return fmt.Sprintf("fault: %s - %s", f.FaultCode, f.FaultString)
 }
 
@@ -120,6 +145,45 @@ func (c *Client) GetExternalIPAddress() (net.IP, error) {
 		}
 	}
 	return nil, fmt.Errorf("igd: GetExternalIPAddress() failed")
+}
+
+// GetListOfPortMappings queries the router for the list of port forwarding
+// entries.
+func (c *Client) GetListOfPortMappings() ([]string, error) {
+	// Sad panda, GetListOfPortMappings requires IDG2 or later, so emulate it
+	// with GetGenericPortMappingEntry.  Theoretically if the number of entries
+	// changes during this process we would need to start over from the
+	// begining, but we don't monitor events so we can't tell.
+
+	resps := make([]string, 0)
+	for idx := 0; idx < math.MaxUint16; idx++ {
+		argsXML := "<NewPortMappingIndex>" + strconv.FormatUint(uint64(idx), 10) + "</NewPortMappingIndex>"
+		respBody, err := c.issueSoapRequest("GetGenericPortMappingEntry", argsXML)
+		if err != nil {
+			// Probably SpecifiedArrayIndexInvalid. (XXX: Check?)
+			c.Vlogf("igd: GetGenericPortMappingEntry returned: %s\n", err)
+			break
+		}
+		if respBody.GetGenericPortMappingEntryResponse != nil {
+			// Too long, much too long.
+			r := respBody.GetGenericPortMappingEntryResponse
+			remoteHost := r.RemoteHost
+			if remoteHost == "" {
+				remoteHost = "0.0.0.0"
+			}
+			s := fmt.Sprintf("'%s' %s:%d <-> %s:%d %s (%d sec)",
+				r.PortMappingDescription,
+				r.InternalClient,
+				r.InternalPort,
+				remoteHost,
+				r.ExternalPort,
+				r.Protocol,
+				r.LeaseDuration)
+			c.Vlogf("%s\n", s)
+			resps = append(resps, s)
+		}
+	}
+	return resps, nil
 }
 
 // AddPortMapping adds a new TCP/IP port mapping.  The internal IP address of

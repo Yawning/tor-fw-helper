@@ -75,7 +75,8 @@ func usage() {
 		" [-T|--test-commandline]\n"+
 		" [-v|--verbose]\n"+
 		" [-g|--fetch-public-ip]\n"+
-		" [-p|--forward-port ([<external port>]:<internal port>)]\n", os.Args[0])
+		" [-p|--forward-port ([<external port>]:<internal port>)]\n"+
+		" [-l|--list-ports]\n", os.Args[0])
 	os.Exit(1)
 }
 
@@ -84,6 +85,7 @@ func main() {
 	doTest := false
 	isVerbose := false
 	doFetchIP := false
+	doList := false
 	var portsToForward forwardList
 
 	// So, the flag package kind of sucks and doesn't gracefully support the
@@ -99,6 +101,8 @@ func main() {
 	flag.BoolVar(&isVerbose, "v", false, "")
 	flag.BoolVar(&doFetchIP, "fetch-public-ip", false, "")
 	flag.BoolVar(&doFetchIP, "g", false, "")
+	flag.BoolVar(&doList, "list-ports", false, "")
+	flag.BoolVar(&doList, "l", false, "")
 	flag.Var(&portsToForward, "forward-port", "")
 	flag.Var(&portsToForward, "p", "")
 	flag.Parse()
@@ -111,8 +115,8 @@ func main() {
 		// Dump information about how we were invoked.
 		fmt.Fprintf(os.Stderr, "V: go-fw-helper version %s\n"+
 			"V: We were called with the following arguments:\n"+
-			"V: verbose = %v, help = %v, fetch_public_ip = %v\n",
-			versionString, isVerbose, doHelp, doFetchIP)
+			"V: verbose = %v, help = %v, fetch_public_ip = %v, list_ports = %v\n",
+			versionString, isVerbose, doHelp, doFetchIP, doList)
 
 		if len(portsToForward) > 0 {
 			fmt.Fprintf(os.Stderr, "V: TCP forwarding:\n")
@@ -130,10 +134,10 @@ func main() {
 		fmt.Fprintf(os.Stderr, "E: --test-commandline not implemented yet\n")
 		os.Exit(1)
 	}
-	if len(portsToForward) == 0 && !doFetchIP {
+	if len(portsToForward) == 0 && !doFetchIP && !doList {
 		// Nothing to do, sad panda.
-		fmt.Fprintf(os.Stderr, "E: We require a port to be forwarded or "+
-			"fetch_public_ip request!\n")
+		fmt.Fprintf(os.Stderr, "E: We require a port to be forwarded, "+
+			"fetch_public_ip request, or list_ports!\n")
 		os.Exit(1)
 	}
 
@@ -163,9 +167,26 @@ func main() {
 	if doFetchIP {
 		ip, err := c.GetExternalIPAddress()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "E: Failed to query the external IP address: %s", err)
+			fmt.Fprintf(os.Stderr, "E: Failed to query the external IP address: %s\n", err)
 			os.Exit(1)
 		}
 		fmt.Fprintf(os.Stderr, "go-fw-helper: ExternalIPAddress = %s\n", ip)
+	}
+
+	// List the current mappings.
+	if doList {
+		ents, err := c.GetListOfPortMappings()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "E: Failed to query the list of mappings: %s\n", err)
+			os.Exit(1)
+		}
+		fmt.Fprintf(os.Stderr, "go-fw-helper: Current port forwarding mappings:\n")
+		if len(ents) == 0 {
+			fmt.Fprintf(os.Stderr, " No entries found.\n")
+		} else {
+			for _, ent := range ents {
+				fmt.Fprintf(os.Stderr, " %s\n", ent)
+			}
+		}
 	}
 }

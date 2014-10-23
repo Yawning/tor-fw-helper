@@ -10,6 +10,7 @@ package natpmp
 import (
 	"fmt"
 	"net"
+	"syscall"
 
 	"github.com/yawning/go-fw-helper/natclient/base"
 )
@@ -140,6 +141,12 @@ func (c *Client) Vlogf(f string, a ...interface{}) {
 	if c.verbose {
 		base.Vlogf(methodName+": "+f, a...)
 	}
+}
+
+// GetListOfPortMappings queries the router for the list of port forwarding
+// entries.
+func (c *Client) GetListOfPortMappings() ([]string, error) {
+	return nil, syscall.ENOTSUP
 }
 
 func (c *Client) Close() {

@@ -39,6 +39,10 @@ type Client interface {
 	// address.
 	GetExternalIPAddress() (net.IP, error)
 
+	// GetListOfPortMappings queries the router for the list of port forwarding
+	// entries.
+	GetListOfPortMappings() ([]string, error)
+
 	// Vlogf logs verbose debugging messages to stderror.  It is up to the
 	// implementation to squelch output when constructed with verbose = false.
 	Vlogf(f string, a ...interface{})
