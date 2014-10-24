@@ -9,7 +9,7 @@ Features:
  * NAT-PMP based NAT traversal.
 
 Limitations:
- * NAT-PMP is only supported on Linux for now.
+ * NAT-PMP is only supported on Linux and BSD for now.
  * go-fw-helper's "-T" option does not write to the log file.
  * As the helper needs to be able to receive UDP packets, the local firewall's
    config may need to be altered.
@@ -19,7 +19,7 @@ Limitations:
    times.
 
 TODO:
- * BSD and Windows NAT-PMP support.
+ * Windows NAT-PMP support.
  * Maybe also support PCP.  Technically everything that speaks PCP should also
    speak NAT-PMP, so this is relatively low priority.
 
