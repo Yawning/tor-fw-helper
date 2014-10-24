@@ -35,7 +35,7 @@ func parseRTMNewRoute(m *syscall.NetlinkMessage) (*routeEntry, error) {
 	e.Protocol = m.Data[5]
 	e.Scope = m.Data[6]
 	e.Type = m.Data[7]
-	e.Flags = uint32(m.Data[8]<<24) | uint32(m.Data[9]<<16) | uint32(m.Data[10]<<8) | uint32(m.Data[11])
+	e.Flags = uint32(m.Data[8])<<24 | uint32(m.Data[9])<<16 | uint32(m.Data[10])<<8 | uint32(m.Data[11])
 	if e.Family != syscall.AF_INET {
 		return nil, syscall.EAFNOSUPPORT
 	}
