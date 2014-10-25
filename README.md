@@ -18,7 +18,6 @@ Limitations:
    times.
 
 TODO:
- * Test Windows NAT-PMP support.
  * Maybe also support PCP.  Technically everything that speaks PCP should also
    speak NAT-PMP, so this is relatively low priority.
 

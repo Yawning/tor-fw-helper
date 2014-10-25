@@ -137,10 +137,10 @@ func newRequestMappingReq(internal, external, duration int) (*requestMappingReq,
 	if internal < 0 || internal > math.MaxUint16 {
 		return nil, syscall.ERANGE
 	}
-	if external < 0 || external > math.MaxUint32 {
+	if external < 0 || external > math.MaxUint16 {
 		return nil, syscall.ERANGE
 	}
-	if duration < 0 || duration > math.MaxUint32 {
+	if duration < 0 || int64(duration) > math.MaxUint32 {
 		return nil, syscall.ERANGE
 	}
 
