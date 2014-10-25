@@ -28,25 +28,42 @@ func registerFactory(f base.ClientFactory) {
 	factoryNames = append(factoryNames, name)
 }
 
-// New attempts to discover and initialize a suitable port forwarding mechanism
-// using any of the compatible backends.
-func New(verbose bool) (base.Client, error) {
-	for _, name := range factoryNames {
-		f := factories[name]
-		if verbose {
-			base.Vlogf("attempting backend: %s\n", name)
+// New attempts to initialize a port forwarding mechanism that is compatible
+// with the local network.  If the protocol is not specified, the first
+// compatible backend will be chosen.
+func New(protocol string, verbose bool) (base.Client, error) {
+	if protocol != "" {
+		f := factories[protocol]
+		if f == nil {
+			return nil, fmt.Errorf("unknown protocol '%s'", protocol)
 		}
-		c, err := f.New(verbose)
-		if c != nil && err == nil {
-			if verbose {
-				base.Vlogf("using backend: %s\n", name)
+		return invokeFactory(f, verbose)
+	} else {
+		for _, name := range factoryNames {
+			f := factories[name]
+			c, err := invokeFactory(f, verbose)
+			if c != nil && err == nil {
+				return c, nil
 			}
-			return c, nil
-		} else if verbose {
-			base.Vlogf("failed to initialize: %s - %s\n", name, err)
 		}
 	}
 	return nil, fmt.Errorf("failed to initialize/discover a port forwarding mechanism")
+}
+
+func invokeFactory(f base.ClientFactory, verbose bool) (base.Client, error) {
+	name := f.Name()
+	if verbose {
+		base.Vlogf("attempting backend: %s\n", name)
+	}
+	c, err := f.New(verbose)
+	if err != nil {
+		base.Vlogf("failed to initialize: %s - %s\n", name, err)
+		return nil, err
+	}
+	if verbose {
+		base.Vlogf("using backend: %s\n", name)
+	}
+	return c, nil
 }
 
 func init() {

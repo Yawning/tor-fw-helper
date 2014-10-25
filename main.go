@@ -77,7 +77,8 @@ func usage() {
 		" [-g|--fetch-public-ip]\n"+
 		" [-p|--forward-port ([<external port>]:<internal port>)]\n"+
 		" [-d|--unforward-port ([<external port>]:<internal port>]\n"+
-		" [-l|--list-ports]\n", os.Args[0])
+		" [-l|--list-ports]\n"+
+		" [--protocol NAT-PMP,UPnP]\n", os.Args[0])
 	os.Exit(1)
 }
 
@@ -89,6 +90,7 @@ func main() {
 	doList := false
 	var portsToForward forwardList
 	var portsToUnforward forwardList
+	protocol := "auto"
 
 	// So, the flag package kind of sucks and doesn't gracefully support the
 	// concept of aliased flags when printing usage, which results in a
@@ -105,6 +107,7 @@ func main() {
 	flag.BoolVar(&doFetchIP, "g", false, "")
 	flag.BoolVar(&doList, "list-ports", false, "")
 	flag.BoolVar(&doList, "l", false, "")
+	flag.StringVar(&protocol, "protocol", "", "")
 	flag.Var(&portsToForward, "forward-port", "")
 	flag.Var(&portsToForward, "p", "")
 	flag.Var(&portsToUnforward, "unforward-port", "")
@@ -119,8 +122,9 @@ func main() {
 		// Dump information about how we were invoked.
 		fmt.Fprintf(os.Stderr, "V: go-fw-helper version %s\n"+
 			"V: We were called with the following arguments:\n"+
-			"V: verbose = %v, help = %v, fetch_public_ip = %v, list_ports = %v\n",
-			versionString, isVerbose, doHelp, doFetchIP, doList)
+			"V: verbose = %v, help = %v, fetch_public_ip = %v, "+
+			"list_ports = %v, protocol = '%s'\n",
+			versionString, isVerbose, doHelp, doFetchIP, doList, protocol)
 
 		if len(portsToForward) > 0 {
 			fmt.Fprintf(os.Stderr, "V: TCP forwarding:\n")
@@ -153,7 +157,7 @@ func main() {
 	}
 
 	// Discover/Initialize a compatible NAT traversal method.
-	c, err := natclient.New(isVerbose)
+	c, err := natclient.New(protocol, isVerbose)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "E: %s\n", err)
 		os.Exit(1)
