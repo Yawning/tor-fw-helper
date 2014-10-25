@@ -15,6 +15,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"syscall"
 )
 
 const maxMappingDuration = 604800
@@ -191,6 +192,10 @@ func (c *Client) GetListOfPortMappings() ([]string, error) {
 // range from 0 to 604800, with the behavior on 0 changing depending on the
 // version of the spec.
 func (c *Client) AddPortMapping(descr string, internalPort, externalPort, duration int) error {
+	if duration > maxMappingDuration {
+		return syscall.ERANGE
+	}
+
 	c.Vlogf("AddPortMapping: '%s' %s:%d <-> 0.0.0.0:%d (%d sec)\n", descr, c.internalAddr, internalPort, externalPort, duration)
 
 	argsXML := "<NewRemoteHost></NewRemoteHost>" +

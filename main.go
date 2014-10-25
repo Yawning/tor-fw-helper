@@ -178,7 +178,7 @@ func main() {
 	for _, pair := range portsToUnforward {
 		err := c.DeletePortMapping(pair.internal, pair.external)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "E: DeletePortMapping() failed: %s\n", pair.internal, pair.external, err)
+			fmt.Fprintf(os.Stderr, "E: DeletePortMapping() External: %d, Interal: %d failed: %s\n", pair.internal, pair.external, err)
 		} else {
 			fmt.Fprintf(os.Stderr, "go-fw-helper: Removed External: %d, Internal:%d\n", pair.external, pair.internal)
 		}
