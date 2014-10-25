@@ -9,17 +9,16 @@ Features:
  * NAT-PMP based NAT traversal.
 
 Limitations:
- * NAT-PMP is only supported on Linux and BSD for now.
  * go-fw-helper's "-T" option does not write to the log file.
  * As the helper needs to be able to receive UDP packets, the local firewall's
    config may need to be altered.
- * Lease times are hardcoded to "0" for UPnP (Indefinite or 1 week/depending on
+ * Lease times are hardcoded to "0" for UPnP (Indefinite/1 week depending on
    the UPnP version) and 7200 seconds for NAT-PMP.  RFC 6886 includes dire
    warnings about broken UPnP implementations that freak out for non-"0" lease
    times.
 
 TODO:
- * Windows NAT-PMP support.
+ * Test Windows NAT-PMP support.
  * Maybe also support PCP.  Technically everything that speaks PCP should also
    speak NAT-PMP, so this is relatively low priority.
 

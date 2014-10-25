@@ -1,7 +1,7 @@
 // Copyright (c) 2014, The Tor Project, Inc.
 // See LICENSE for licensing information
 
-// +build !linux,!dragonfly,!freebsd,!netbsd,!openbsd,!darwin
+// +build !linux,!dragonfly,!freebsd,!netbsd,!openbsd,!darwin,!windows
 
 package natpmp
 
