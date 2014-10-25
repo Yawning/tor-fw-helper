@@ -41,9 +41,9 @@ func getGateway() (net.IP, error) {
 
 	var dwDestAddr, dwSourceAddr uintptr // 0.0.0.0
 	row := mibIPForwardRow{}
-	r0, _, e1 := syscall.Syscall(procGetBestRoute.Addr(), 3, dwDestAddr, dwSourceAddr, uintptr(unsafe.Pointer(&row)))
+	r0, _, _ := syscall.Syscall(procGetBestRoute.Addr(), 3, dwDestAddr, dwSourceAddr, uintptr(unsafe.Pointer(&row)))
 	if r0 != 0 { // r0 != NO_ERROR
-		return nil, e1
+		return nil, syscall.Errno(r0)
 	}
 
 	// Ok, row should have what windows thinks is the best route to "0.0.0.0"
