@@ -178,14 +178,18 @@ func main() {
 		os.Stdout.Sync()
 	}
 
-	// Unforward some ports.
+	// Unforward some ports, the response is delivered over stdout in a
+	// predefined format similar to forwarding.
 	for _, pair := range portsToUnforward {
 		err := c.DeletePortMapping(pair.internal, pair.external)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "E: DeletePortMapping() External: %d, Interal: %d failed: %s\n", pair.internal, pair.external, err)
+			c.Vlogf("DeletePortMapping() failed: %s\n", err)
+			fmt.Fprintf(os.Stdout, "tor-fw-helper tcp-unforward %d %d FAIL\n", pair.external, pair.internal)
 		} else {
-			fmt.Fprintf(os.Stderr, "go-fw-helper: Removed External: %d, Internal:%d\n", pair.external, pair.internal)
+			c.Vlogf("DeletePortMapping() succeded\n")
+			fmt.Fprintf(os.Stdout, "tor-fw-helper tcp-unforward %d %d SUCCESS\n", pair.external, pair.internal)
 		}
+		os.Stdout.Sync()
 	}
 
 	// Get the external IP.
@@ -207,10 +211,10 @@ func main() {
 		}
 		fmt.Fprintf(os.Stderr, "go-fw-helper: Current port forwarding mappings:\n")
 		if len(ents) == 0 {
-			fmt.Fprintf(os.Stderr, " No entries found.\n")
+			fmt.Fprintf(os.Stderr, "go-fw-helper:  No entries found.\n")
 		} else {
 			for _, ent := range ents {
-				fmt.Fprintf(os.Stderr, " %s\n", ent)
+				fmt.Fprintf(os.Stderr, "go-fw-helper:  %s\n", ent)
 			}
 		}
 	}
