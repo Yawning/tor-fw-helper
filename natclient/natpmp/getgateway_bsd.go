@@ -18,8 +18,8 @@ const (
 var defaultNet = net.IPv4(0, 0, 0, 0)
 
 func getGateway() (net.IP, error) {
-	// Ok, so the BSD version of the go runtime routing table dumo code is
-	// a bit more limited than the Linux version, since again, getting the
+	// Ok, so the BSD version of the go runtime routing table interaction code
+	// is a bit more limited than the Linux version, since again, getting the
 	// message metadata is a huge pain.  This should work on all the BSDs
 	// that are relevant.
 	rib, err := syscall.RouteRIB(NET_RT_DUMP, 0)
