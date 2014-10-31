@@ -166,7 +166,7 @@ func (c *Client) discover() (cp *controlPoint, localAddr net.IP, err error) {
 	for _, rootLoc := range rootXMLLocs {
 		// 2. Pull down the "Device Description" document.
 		c.Vlogf("downloading 'Device Description' from %s\n", rootLoc)
-		rootXML, localAddr, err := retreiveDeviceDescription(rootLoc)
+		rootXML, localAddr, err := retrieveDeviceDescription(rootLoc)
 		if err != nil {
 			c.Vlogf("download failed: %s\n", err)
 			continue
@@ -314,7 +314,7 @@ func discoverRootDevices() ([]*url.URL, error) {
 	return nil, fmt.Errorf("ssdp: failed to discover any root devices")
 }
 
-func retreiveDeviceDescription(xmlLoc *url.URL) (*upnpRoot, net.IP, error) {
+func retrieveDeviceDescription(xmlLoc *url.URL) (*upnpRoot, net.IP, error) {
 	c, err := net.Dial("tcp", xmlLoc.Host)
 	if err != nil {
 		return nil, nil, err

@@ -44,7 +44,9 @@ type Client interface {
 	GetExternalIPAddress() (net.IP, error)
 
 	// GetListOfPortMappings queries the router for the list of port forwarding
-	// entries.
+	// entries, and returns all that were found as a string slice.  Each string
+	// in the slice is of the format "'description' internalIP:internalPort <->
+	// externalIP:externalPort protocol (leaseDuration sec)".
 	GetListOfPortMappings() ([]string, error)
 
 	// Vlogf logs verbose debugging messages to stderror.  It is up to the
@@ -55,7 +57,7 @@ type Client interface {
 	Close()
 }
 
-// Vlogf logs verbose debugging messages to stderror.
+// Vlogf logs verbose debugging messages to stderr.
 func Vlogf(f string, a ...interface{}) {
 	fmt.Fprintf(os.Stderr, VlogPrefix+f, a...)
 }

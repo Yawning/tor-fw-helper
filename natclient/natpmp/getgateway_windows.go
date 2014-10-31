@@ -12,7 +12,8 @@ import (
 var iphlpapi = syscall.NewLazyDLL("Iphlpapi.dll")
 var procGetBestRoute = iphlpapi.NewProc("GetBestRoute")
 
-// mibIPForwardRow is MIBIPFORWARDROW from windows.
+// mibIPForwardRow is MIBIPFORWARDROW from Windows.
+// See: http://msdn.microsoft.com/en-us/library/windows/desktop/aa366850%28v=vs.85%29.aspx
 type mibIPForwardRow struct {
 	dwForwardDest      uint32
 	dwForwardMask      uint32
@@ -31,7 +32,10 @@ type mibIPForwardRow struct {
 }
 
 func getGateway() (net.IP, error) {
-	// This routine uses "unsafe".  Yolo, swag, 420 blaze it.
+	// Load the iphlpapi.dll helper library and find the symbol for
+	// GetBestRoute().
+	//
+	// See: http://msdn.microsoft.com/en-us/library/windows/desktop/aa365924%28v=vs.85%29.aspx
 	if err := iphlpapi.Load(); err != nil {
 		return nil, err
 	}

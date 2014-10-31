@@ -22,8 +22,13 @@ import (
 )
 
 const (
+	// mappingDescr is the default mapping entry name.
 	mappingDescr    = "Tor relay"
+
+	// mappingDuration is the default mapping duration.  A value of 0 indicates
+	// that the protocol implementation's safe default value is used.
 	mappingDuration = 0
+
 	versionString   = "0.1"
 )
 
@@ -90,7 +95,7 @@ func main() {
 	doList := false
 	var portsToForward forwardList
 	var portsToUnforward forwardList
-	protocol := "auto"
+	protocol := ""
 
 	// So, the flag package kind of sucks and doesn't gracefully support the
 	// concept of aliased flags when printing usage, which results in a

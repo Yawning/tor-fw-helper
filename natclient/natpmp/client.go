@@ -139,7 +139,7 @@ func (c *Client) GetExternalIPAddress() (net.IP, error) {
 	req := newExternalAddressReq()
 	r, err := c.issueRequest(req)
 	if err != nil {
-		c.Vlogf("failed to external address: %s\n", err)
+		c.Vlogf("failed to query external address: %s\n", err)
 		return nil, err
 	}
 	if resp, ok := r.(*externalAddressResp); ok {

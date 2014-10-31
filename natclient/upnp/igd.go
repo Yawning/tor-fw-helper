@@ -151,7 +151,7 @@ func (c *Client) GetExternalIPAddress() (net.IP, error) {
 // GetListOfPortMappings queries the router for the list of port forwarding
 // entries.
 func (c *Client) GetListOfPortMappings() ([]string, error) {
-	// Sad panda, GetListOfPortMappings requires IDG2 or later, so emulate it
+	// Sad panda, GetListOfPortMappings requires IGD2 or later, so emulate it
 	// with GetGenericPortMappingEntry.  Theoretically if the number of entries
 	// changes during this process we would need to start over from the
 	// begining, but we don't monitor events so we can't tell.

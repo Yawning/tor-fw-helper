@@ -278,9 +278,9 @@ func (c *Client) issueRequest(req packetReq) (interface{}, error) {
 					return resp, nil
 				}
 			default:
-				// IDK WTF this is, oh well, surely when adding support for
-				// other opcodes, people will add more case statements.
-				return rawRespBuf[:n], nil
+				// That's odd, we send a request for an opcode that we don't
+				// know how to handle responses for.
+				return nil, fmt.Errorf("unknown response packet: %d\n", rawRespBuf[1])
 			}
 		}
 	}

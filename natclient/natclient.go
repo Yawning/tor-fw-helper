@@ -30,7 +30,8 @@ func registerFactory(f base.ClientFactory) {
 
 // New attempts to initialize a port forwarding mechanism that is compatible
 // with the local network.  If the protocol is not specified, the first
-// compatible backend will be chosen.
+// compatible backend will be chosen.  Currently supported protocols are "UPnP"
+// and "NAT-PMP".
 func New(protocol string, verbose bool) (base.Client, error) {
 	if protocol != "" {
 		f := factories[protocol]
