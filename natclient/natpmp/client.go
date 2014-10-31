@@ -8,7 +8,6 @@
 package natpmp
 
 import (
-	"flag"
 	"fmt"
 	"net"
 	"syscall"
@@ -22,8 +21,6 @@ const (
 	natpmpPort   = 5351
 	outgoingPort = 0
 )
-
-var allowDeletePortMapping = false
 
 type ClientFactory struct{}
 
@@ -108,19 +105,12 @@ func (c *Client) AddPortMapping(description string, internalPort, externalPort, 
 // DeletePortMapping removes an existing TCP/IP port forwarding entry
 // between clientIP:internalPort and 0.0.0.0:externalPort.
 func (c *Client) DeletePortMapping(internalPort, externalPort int) error {
-	// Old versions (non-master as of this writing) of miniupnpd don't handle
-	// this correctly according to the spec (draft or RFC), so allowing this
-	// will potentially blow away the incorrect mappings.
-	if allowDeletePortMapping {
-		req, err := newRequestMappingReq(internalPort, 0, 0)
-		if err != nil {
-			return err
-		}
-		_, err = c.issueRequest(req)
+	req, err := newRequestMappingReq(internalPort, 0, 0)
+	if err != nil {
 		return err
 	}
-
-	return syscall.ENOTSUP
+	_, err = c.issueRequest(req)
+	return err
 }
 
 // GetExternalIPAddress queries the router's external IP address.
@@ -163,12 +153,6 @@ func (c *Client) GetListOfPortMappings() ([]string, error) {
 
 func (c *Client) Close() {
 	c.conn.Close()
-}
-
-func init() {
-	// Undocumented flag that allows people to do something that's broken on
-	// certain NAT-PMP stacks.
-	flag.BoolVar(&allowDeletePortMapping, "natpmp-allow-delete", false, "")
 }
 
 var _ base.ClientFactory = (*ClientFactory)(nil)
