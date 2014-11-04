@@ -5,10 +5,10 @@
  * See LICENSE for licensing information
  */
 
-// go-fw-helper is a tool for opening firewalls with the various NAT traversal
-// mechanisms.  This tool is designed as a drop in replacement for
-// tor-fw-helper, with less hard-to-audit library code, and the use of a
-// memory-safe language as design goals.
+// tor-fw-helper is a tool for opening firewalls with the various NAT traversal
+// mechanisms.  This tool is designed as a drop in replacement for the orginal
+// C language tor-fw-helper, with less hard-to-audit library code, and the use
+// of a memory-safe language as design goals.
 package main
 
 import (
@@ -18,7 +18,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yawning/go-fw-helper/natclient"
+	"github.com/yawning/tor-fw-helper/natclient"
 )
 
 const (
@@ -29,7 +29,7 @@ const (
 	// that the protocol implementation's safe default value is used.
 	mappingDuration = 0
 
-	versionString   = "0.1"
+	versionString   = "0.3"
 )
 
 type portPair struct {
@@ -125,7 +125,7 @@ func main() {
 	}
 	if isVerbose {
 		// Dump information about how we were invoked.
-		fmt.Fprintf(os.Stderr, "V: go-fw-helper version %s\n"+
+		fmt.Fprintf(os.Stderr, "V: tor-fw-helper version %s\n"+
 			"V: We were called with the following arguments:\n"+
 			"V: verbose = %v, help = %v, fetch_public_ip = %v, "+
 			"list_ports = %v, protocol = '%s'\n",
@@ -204,7 +204,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "E: Failed to query the external IP address: %s\n", err)
 			os.Exit(1)
 		}
-		fmt.Fprintf(os.Stderr, "go-fw-helper: ExternalIPAddress = %s\n", ip)
+		fmt.Fprintf(os.Stderr, "tor-fw-helper: ExternalIPAddress = %s\n", ip)
 	}
 
 	// List the current mappings.
@@ -214,12 +214,12 @@ func main() {
 			fmt.Fprintf(os.Stderr, "E: Failed to query the list of mappings: %s\n", err)
 			os.Exit(1)
 		}
-		fmt.Fprintf(os.Stderr, "go-fw-helper: Current port forwarding mappings:\n")
+		fmt.Fprintf(os.Stderr, "tor-fw-helper: Current port forwarding mappings:\n")
 		if len(ents) == 0 {
-			fmt.Fprintf(os.Stderr, "go-fw-helper:  No entries found.\n")
+			fmt.Fprintf(os.Stderr, "tor-fw-helper:  No entries found.\n")
 		} else {
 			for _, ent := range ents {
-				fmt.Fprintf(os.Stderr, "go-fw-helper:  %s\n", ent)
+				fmt.Fprintf(os.Stderr, "tor-fw-helper:  %s\n", ent)
 			}
 		}
 	}

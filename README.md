@@ -1,10 +1,11 @@
-### go-fw-helper - tor-fw-helper with extra safety.
+### tor-fw-helper - Go language tor-fw-helper rewrite.
 #### Yawning Angel (yawning at torproject dot org)
 
-go-fw-helper is designed as a drop-in replacement for tor-fw-helper.
+This is a tor-fw-helper rewrite in Go that functions as a drop in replacement
+for the original C code.
 
 Features:
- * Interface compatibility with tor-fw-helper.
+ * Interface compatibility with the C tor-fw-helper.
  * UPnP based NAT traversal.
  * NAT-PMP based NAT traversal.
 
