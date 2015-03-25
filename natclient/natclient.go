@@ -39,13 +39,12 @@ func New(protocol string, verbose bool) (base.Client, error) {
 			return nil, fmt.Errorf("unknown protocol '%s'", protocol)
 		}
 		return invokeFactory(f, verbose)
-	} else {
-		for _, name := range factoryNames {
-			f := factories[name]
-			c, err := invokeFactory(f, verbose)
-			if c != nil && err == nil {
-				return c, nil
-			}
+	}
+	for _, name := range factoryNames {
+		f := factories[name]
+		c, err := invokeFactory(f, verbose)
+		if c != nil && err == nil {
+			return c, nil
 		}
 	}
 	return nil, fmt.Errorf("failed to initialize/discover a port forwarding mechanism")
