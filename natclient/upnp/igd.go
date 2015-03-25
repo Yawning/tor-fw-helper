@@ -156,7 +156,7 @@ func (c *Client) GetListOfPortMappings() ([]string, error) {
 	// changes during this process we would need to start over from the
 	// begining, but we don't monitor events so we can't tell.
 
-	resps := make([]string, 0)
+	var resps []string
 	for idx := 0; idx < math.MaxUint16; idx++ {
 		argsXML := "<NewPortMappingIndex>" + strconv.FormatUint(uint64(idx), 10) + "</NewPortMappingIndex>"
 		respBody, err := c.issueSoapRequest("GetGenericPortMappingEntry", argsXML)
