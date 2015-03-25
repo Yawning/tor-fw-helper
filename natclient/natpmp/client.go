@@ -19,7 +19,6 @@ const (
 	methodName = "NAT-PMP"
 
 	natpmpPort   = 5351
-	outgoingPort = 0
 )
 
 type ClientFactory struct{}
