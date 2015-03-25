@@ -55,5 +55,5 @@ func getGateway() (net.IP, error) {
 	// network byte order.  Assume host byte order is little endian because
 	// this is windows.
 	a := row.dwForwardNextHop
-	return net.IPv4(byte(a), byte(a >> 8), byte(a >> 16), byte(a >> 24)), nil
+	return net.IPv4(byte(a), byte(a>>8), byte(a>>16), byte(a>>24)), nil
 }

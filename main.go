@@ -23,13 +23,13 @@ import (
 
 const (
 	// mappingDescr is the default mapping entry name.
-	mappingDescr    = "Tor relay"
+	mappingDescr = "Tor relay"
 
 	// mappingDuration is the default mapping duration.  A value of 0 indicates
 	// that the protocol implementation's safe default value is used.
 	mappingDuration = 0
 
-	versionString   = "0.3"
+	versionString = "0.3"
 )
 
 type portPair struct {

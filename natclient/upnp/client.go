@@ -15,7 +15,7 @@ import (
 const (
 	methodName = "UPnP"
 
-//	userAgent = "BeOS/5.0 UPnP/1.1 Helper/1.0"
+	// userAgent = "BeOS/5.0 UPnP/1.1 Helper/1.0"
 	userAgent    = "" // Standardized, but optional.
 	outgoingPort = 0
 )
