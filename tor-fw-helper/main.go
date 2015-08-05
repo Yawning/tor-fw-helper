@@ -18,7 +18,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yawning/tor-fw-helper/natclient"
+	"git.torproject.org/tor-fw-helper.git/natclient"
 )
 
 const (

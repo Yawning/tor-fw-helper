@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yawning/tor-fw-helper/natclient/upnp/httpu"
+	"git.torproject.org/tor-fw-helper.git/natclient/upnp/httpu"
 )
 
 const (

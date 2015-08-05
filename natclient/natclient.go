@@ -10,9 +10,9 @@ package natclient
 import (
 	"fmt"
 
-	"github.com/yawning/tor-fw-helper/natclient/base"
-	"github.com/yawning/tor-fw-helper/natclient/natpmp"
-	"github.com/yawning/tor-fw-helper/natclient/upnp"
+	"git.torproject.org/tor-fw-helper.git/natclient/base"
+	"git.torproject.org/tor-fw-helper.git/natclient/natpmp"
+	"git.torproject.org/tor-fw-helper.git/natclient/upnp"
 )
 
 var factories = make(map[string]base.ClientFactory)

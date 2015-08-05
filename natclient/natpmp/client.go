@@ -12,7 +12,7 @@ import (
 	"net"
 	"syscall"
 
-	"github.com/yawning/tor-fw-helper/natclient/base"
+	"git.torproject.org/tor-fw-helper.git/natclient/base"
 )
 
 const (
